@@ -1,69 +1,217 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <conio.h>
 
 #include "Tools.h"
 
 using namespace std;
 
+bool Menu(char digits[9][9]);
 bool Enter(char digits[9][9]);
-bool Load(char digits[9][9]);
+bool Load(char digits[9][9], string arg_path = " ");
+bool Save(char digits[9][9], string arg_path = " ");
 void Solve(char digits[9][9]);
 
-int main()
+int main(int argc, char *argv[])
 {
 	SetConsoleTitleA("Sudoku Solver");
-	cout << "SUDOKU SOLVER\n" 
-		 << "[1] - Enter Sudoku puzzle.\n"
-		 << "[2] - Load Sudoku from a file.\n";
+	SetConsoleScreenBufferSize(GetHandle(), {SC_WIDTH, SC_HEIGHT});
+	char digits[9][9];
+	switch(argc)
+	{
+	case 1:
+		if(!Menu(digits))
+		{
+			"Program execution failed.\n";
+			return -1;
+		}
+		break;
+	case 2:
+		if(string(argv[1]) == "-path")
+		{
+			cout << "USAGE: -path [file path]\n";
+		}
+		else
+		{
+			cout << "Argument \"" << argv[1] << "\" is invalid.\n";
+		}
+		break;
+	case 3:
+		if(string(argv[1]) == "-path")
+		{
+			if(!Load(digits, string(argv[2])))
+			{
+				cout << "Failed loading data.\n";
+				return 0;
+			}
+		}
+	default:
+		cout << "Invalid arguments.\n";
+		break;
+	}
+	system("cls");
+	cout << "SUDOKU SOLVER\n";
+	cout << "-------------------------------\n"
+	     << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|-----------------------------|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|-----------------------------|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "-------------------------------\n";
+	SetConsoleTextAttribute(GetHandle(), 12);
+	char temp[9][9];
+	for(int i = 0; i < 9; i++)
+	{
+		for(int j = 0; j < 9; j++)
+		{
+			temp[i][j] = digits[i][j];
+			Goto(i * 3 + 2 + (i / 3), j + 2 + (j / 3));
+			{
+				if(temp[i][j] != '0')
+					cout << digits[i][j];
+			}
+		}
+	}
+	SetConsoleTextAttribute(GetHandle(), 7);
+	Goto(0, 14);
+	char ans;
+	cout << "Solve? y/n\n";
+	cout << "\n>> ";
+	cin >> ans;
+	switch(tolower(ans))
+	{
+	case 'y':
+		Solve(digits);
+		break;
+	case 'n':
+		return -1;
+		break;
+	default:
+		cout << "Invalid input: " << ans << endl;
+		return -1;
+		break;
+	}
+	for(int i = 0; i < 9; i++)
+	{
+		for(int j = 0; j < 9; j++)
+		{
+			Goto(i * 3 + 2 + (i / 3), j + 2 + (j / 3));
+			{
+				if(temp[i][j] == '0')
+				{
+					cout << digits[i][j];
+				}
+			}
+		}
+	}
+	Goto(0, 14);
+	cout << "Save to file? y/n\n";
+	cout << "\n>> " << string(SC_WIDTH - 3, ' ');
+	Goto(3, 16);
+	cin >> ans;
+	system("cls");
+	switch(tolower(ans))
+	{
+	case 'y':
+		Save(digits);
+		break;
+	case 'n':
+		return -1;
+		break;
+	default:
+		cout << "Invalid input: " << ans << endl;
+		return -1;
+		break;
+	}
+	cout << "\nExiting Program...\n";
+	Sleep(1000);
+	return 0;
+}
+
+bool Menu(char digits[9][9])
+{
+	cout << "SUDOKU SOLVER\n"
+		<< "[1] - Enter Sudoku puzzle.\n"
+		<< "[2] - Load Sudoku from a file.\n";
 	cout << "\n>> ";
 	char opt;
-	char digits[9][9];
 	cin >> opt;
 	system("cls");
 	switch(opt)
 	{
 	case '1':
 		if(!Enter(digits))
-			return -1;
+			return 0;
 		break;
 	case '2':
 		if(!Load(digits))
-			return -1;
+		{
+			cout << "Failed loading data.\n";
+			return 0;
+		}
+		break;
+	default:
+		cout << "[ " << opt << " ] is not accepted.\n";
+		system("pause");
+		system("cls");
+		Menu(digits);
 		break;
 	}
-	for(int i = 0; i < 9; i++)
-	{
-		for(int j = 0; j < 9; j++)
-		{
-			cout << digits[i][j];
-		}
-		cout << endl;
-	}
-	cout << endl;
-	Solve(digits);
-	for(int i = 0; i < 9; i++)
-	{
-		for(int j = 0; j < 9; j++)
-		{
-			cout << digits[i][j];
-		}
-		cout << endl;
-	}
-	system("pause > 0");
 }
 
 bool Enter(char digits[9][9])
 {
+	system("cls");
+	cout << "SUDOKU SOLVER\n";
+	cout << "-------------------------------\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|-----------------------------|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|-----------------------------|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
+		 << "-------------------------------\n";
+	SetConsoleTextAttribute(GetHandle(), 12);
+	cin.ignore();
+	for(int i = 0; i < 9; i++)
+	{
+		for(int j = 0; j < 9; j++)
+		{
+			Goto(j * 3 + 2 + (j / 3), i + 2 + (i / 3));
+			char c = _getch();
+			digits[j][i] = c;
+			_putch(c);
+		}
+	}
+	SetConsoleTextAttribute(GetHandle(), 7);
 	return 1;
 }
 
-bool Load(char digits[9][9])
+bool Load(char digits[9][9], string arg_path)
 {
-	cout << "SUDOKU SOLVER\n";
-	cout << "Enter file path: ";
 	string path;
-	cin >> path;
+	cout << "SUDOKU SOLVER\n";
+	if(arg_path == " ")
+	{
+		cout << "Enter file path: ";
+		cin >> path;
+	}	
+	else
+	{
+		path = arg_path;
+	}
 	ifstream load(path);
 	if(load.is_open())
 	{
@@ -106,6 +254,64 @@ bool Load(char digits[9][9])
 		return 0;
 	}
 	load.close();
+	return 1;
+}
+
+bool Save(char digits[9][9], string arg_path)
+{
+	string path;
+	cout << "SUDOKU SOLVER\n";
+	if(arg_path == " ")
+	{
+		cout << "Enter save path: ";
+		cin >> path;
+	}
+	else
+	{
+		path = arg_path;
+	}
+	ofstream save(path);
+	if(save.is_open())
+	{
+		string text[] =
+		{
+			"-------------------------------\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|-----------------------------|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|-----------------------------|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n",
+			"-------------------------------\n"
+		};
+		cout << "Saving...\n";
+		for(int i = 0; i < 9; i++)
+		{
+			for(int j = 0; j < 9; j++)
+			{
+				text[i + 1 + (i / 3)][j * 3 + 2 + (j / 3)] = digits[j][i];
+			}
+		}
+		for(int i = 0; i < 13; i++)
+		{
+			save << text[i];
+		}
+	}
+	else
+	{
+		cout << "File not found.\n";
+		return 0;
+	}
+	Goto(0, 2);
+	cout << "Saved!" << string(SC_WIDTH - 6, ' ') << endl;
+	system("pause");
+	system("cls");
+	save.close();
 	return 1;
 }
 
@@ -194,7 +400,6 @@ void Solve(char digits[9][9])
 			}
 		}
 	}
-	
 	for(int i = 0; i < 9; i++)
 	{
 		for(int j = 0; j < 9; j++)
