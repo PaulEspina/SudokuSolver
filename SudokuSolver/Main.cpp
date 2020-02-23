@@ -18,37 +18,39 @@ int main(int argc, char *argv[])
 	SetConsoleTitleA("Sudoku Solver");
 	SetConsoleScreenBufferSize(GetHandle(), {SC_WIDTH, SC_HEIGHT});
 	char digits[9][9];
-	switch(argc)
+	bool save = false;
+	string save_name;
+	if(argc == 1)
 	{
-	case 1:
 		if(!Menu(digits))
 		{
 			"Program execution failed.\n";
 			return -1;
 		}
-		break;
-	case 2:
-		if(string(argv[1]) == "-path")
+	}
+	else
+	{
+		for(int i = 1; i < argc; i += 2)
 		{
-			cout << "USAGE: -path [file path]\n";
-		}
-		else
-		{
-			cout << "Argument \"" << argv[1] << "\" is invalid.\n";
-		}
-		break;
-	case 3:
-		if(string(argv[1]) == "-path")
-		{
-			if(!Load(digits, string(argv[2])))
+			if(string(argv[i]) == "-l")
 			{
-				cout << "Failed loading data.\n";
-				return 0;
+				if(!Load(digits, string(argv[i + 1])))
+				{
+					cout << "Failed loading data.\n";
+					return 0;
+				}
+			}
+			else if(string(argv[i]) == "-s")
+			{
+				save_name = argv[i + 1];
+				save = true;
+			}
+			else
+			{
+				cout << "Invalid arguments.\n";
+				return -1;
 			}
 		}
-	default:
-		cout << "Invalid arguments.\n";
-		break;
 	}
 	system("cls");
 	cout << "SUDOKU SOLVER\n";
@@ -111,24 +113,33 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	Goto(0, 14);
-	cout << "Save to file? y/n\n";
-	cout << "\n>> " << string(SC_WIDTH - 3, ' ');
-	Goto(3, 16);
-	cin >> ans;
-	system("cls");
-	switch(tolower(ans))
+	if(!save)
 	{
-	case 'y':
-		Save(digits);
-		break;
-	case 'n':
-		return -1;
-		break;
-	default:
-		cout << "Invalid input: " << ans << endl;
-		return -1;
-		break;
+		Goto(0, 14);
+		cout << "Save to file? y/n\n";
+		cout << "\n>> " << string(SC_WIDTH - 3, ' ');
+		Goto(3, 16);
+		cin >> ans;
+		system("cls");
+		switch(tolower(ans))
+		{
+		case 'y':
+			Save(digits);
+			break;
+		case 'n':
+			cout << "\nExiting Program...\n";
+			Sleep(1000);
+			return 0;
+			break;
+		default:
+			cout << "Invalid input: " << ans << endl;
+			break;
+		}
+	}
+	else
+	{
+		system("cls");
+		Save(digits, save_name);
 	}
 	cout << "\nExiting Program...\n";
 	Sleep(1000);
@@ -158,12 +169,13 @@ bool Menu(char digits[9][9])
 		}
 		break;
 	default:
-		cout << "[ " << opt << " ] is not accepted.\n";
+		cout << "\'" << opt << "\' is not accepted.\n";
 		system("pause");
 		system("cls");
 		Menu(digits);
 		break;
 	}
+	return 1;
 }
 
 bool Enter(char digits[9][9])
@@ -263,14 +275,14 @@ bool Save(char digits[9][9], string arg_path)
 	cout << "SUDOKU SOLVER\n";
 	if(arg_path == " ")
 	{
-		cout << "Enter save path: ";
+		cout << "Enter file name: ";
 		cin >> path;
 	}
 	else
 	{
 		path = arg_path;
 	}
-	ofstream save(path);
+	ofstream save(path + ".txt");
 	if(save.is_open())
 	{
 		string text[] =
