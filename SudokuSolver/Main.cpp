@@ -4,7 +4,7 @@ bool Menu(char digits[9][9], bool &run);
 bool Enter(char digits[9][9]);
 bool Load(char digits[9][9], string arg_path = " ");
 bool Save(char digits[9][9], string arg_path = " ");
-void Solve(char digits[9][9]);
+bool Solve(char digits[9][9]);
 
 int main(int argc, char *argv[])
 {
@@ -71,10 +71,16 @@ int main(int argc, char *argv[])
 			if(save && load)
 			{
 				cout << "Solving...\n";
-				Solve(digits);
-				cout << "Solved.\n";
-				Save(digits, save_name);
-				cout << "File saved as \"" << save_name << ".txt\"\n";
+				if(!Solve(digits))
+				{
+					cout << "Puzzle is impossible to solve.\n";
+				}
+				else
+				{
+					cout << "Solved.\n";
+					Save(digits, save_name);
+					cout << "File saved as \"" << save_name << ".txt\"\n";
+				}
 				system("pause");
 				system("cls");
 				exit(0);
@@ -109,7 +115,16 @@ int main(int argc, char *argv[])
 				}
 				SetConsoleTextAttribute(GetHandle(), 7);
 				if(Prompt("Solve? y/n", false, {0, 14}))
-					Solve(digits);
+				{
+					if(!Solve(digits))
+					{
+						system("cls");
+						cout << "Puzzle is impossible to solve.\n";
+						first = false;
+						system("pause");
+						continue;
+					}
+				}
 				else
 				{
 					first = false;
@@ -384,21 +399,22 @@ bool Save(char digits[9][9], string arg_path)
 	return 1;
 }
 
-void Solve(char digits[9][9])
+bool Solve(char digits[9][9])
 {
-	// Put hints to their respective bounds
-	vector<char> h_bounds[9], v_bounds[9], box_bounds[9];
 	for(int i = 0; i < 9; i++)
 	{
 		for(int j = 0; j < 9; j++)
 		{
-
 			if(digits[i][j] != '0')
-				h_bounds[i].push_back(digits[i][j]); // adds to horizontal bounds
-			if(digits[j][i] != '0')
-				v_bounds[i].push_back(digits[j][i]); // adds to vertival bounds
-			if(digits[j + i / 3][i / 3 + (j % 3) * 3] != '0') // adds to box bounds
-				box_bounds[i].push_back(digits[j + i / 3][i / 3 + (j % 3) * 3]);
+			{
+				for(int k = 0; k < 9; k++)
+				if((digits[i][k] == digits[i][j] && j != k) || 
+				   (digits[k][j] == digits[i][j] && i != k) || 
+				   digits[i - i % 3 + k / 3][j - j % 3 + k % 3] == digits[i][j] && !(i == i - i % 3 + k / 3 && j == j - j % 3 + k % 3))
+				{
+					return 0;
+				}
+			}
 		}
 	}
 	char temp[9][9];
@@ -425,7 +441,7 @@ void Solve(char digits[9][9])
 						good = false;
 					else
 						guess++;
-					for(int k = 0; k < 9; k++ && good)
+					for(int k = 0; k < 9; k++)
 					{
 						if(temp[i][k] == guess || temp[k][j] == guess || temp[i - i % 3 + k / 3][j - j % 3 + k % 3] == guess)
 						{
@@ -462,4 +478,5 @@ void Solve(char digits[9][9])
 			digits[i][j] = temp[i][j];
 		}
 	}
+	return 1;
 }
