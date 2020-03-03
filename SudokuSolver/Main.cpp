@@ -1,10 +1,13 @@
 #include "Tools.h"
 
-bool Menu(char digits[9][9], bool &run);
-bool Enter(char digits[9][9]);
-bool Load(char digits[9][9], string arg_path = " ");
-bool Save(char digits[9][9], string arg_path = " ");
-bool Solve(char digits[9][9]);
+const int N = 9;
+const int SUB_N = 3;
+
+bool Menu(char digits[N][N], bool &run);
+bool Enter(char digits[N][N]);
+bool Load(char digits[N][N], string arg_path = " ");
+bool Save(char digits[N][N], string arg_path = " ");
+bool Solve(char digits[N][N]);
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +17,7 @@ int main(int argc, char *argv[])
 	bool first = true;
 	do
 	{
-		char digits[9][9];
+		char digits[N][N];
 		bool save = false;
 		bool load = false;
 		string save_name;
@@ -102,13 +105,13 @@ int main(int argc, char *argv[])
 					 <<   "|[ ][ ][ ]|[ ][ ][ ]|[ ][ ][ ]|\n"
 					 <<   "-------------------------------\n";
 				SetConsoleTextAttribute(GetHandle(), 12);
-				char temp[9][9];
-				for(int i = 0; i < 9; i++)
+				char temp[N][N];
+				for(int i = 0; i < N; i++)
 				{
-					for(int j = 0; j < 9; j++)
+					for(int j = 0; j < N; j++)
 					{
 						temp[i][j] = digits[i][j];
-						Goto(i * 3 + 2 + (i / 3), j + 2 + (j / 3));
+						Goto(i * SUB_N + 2 + (i / SUB_N), j + 2 + (j / SUB_N));
 						if(temp[i][j] != '0')
 							cout << digits[i][j];
 					}
@@ -130,11 +133,11 @@ int main(int argc, char *argv[])
 					first = false;
 					continue;
 				}
-				for(int i = 0; i < 9; i++)
+				for(int i = 0; i < N; i++)
 				{
-					for(int j = 0; j < 9; j++)
+					for(int j = 0; j < N; j++)
 					{
-						Goto(i * 3 + 2 + (i / 3), j + 2 + (j / 3));
+						Goto(i * SUB_N + 2 + (i / SUB_N), j + 2 + (j / SUB_N));
 						if(temp[i][j] == '0')
 						{
 							cout << digits[i][j];
@@ -195,13 +198,13 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-bool Menu(char digits[9][9], bool &run)
+bool Menu(char digits[N][N], bool &run)
 {
 	system("cls");
 	cout << "SUDOKU SOLVER\n"
 		 << "[1] - Enter Sudoku puzzle.\n"
 		 << "[2] - Load Sudoku from a file.\n"
-		 << "[3] - Exit.\n";
+		 << "[SUB_N] - Exit.\n";
 	cout << "\n>> ";
 	char opt;
 	cin >> opt;
@@ -232,7 +235,7 @@ bool Menu(char digits[9][9], bool &run)
 	return 1;
 }
 
-bool Enter(char digits[9][9])
+bool Enter(char digits[N][N])
 {
 	system("cls");
 	cout << "\n-------------------------------\n"
@@ -251,17 +254,17 @@ bool Enter(char digits[9][9])
 	SetConsoleTextAttribute(GetHandle(), 12);
 	cin.ignore();
 	string valid_input = "1234567890";
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < N; i++)
 	{
-		for(int j = 0; j < 9; j++)
+		for(int j = 0; j < N; j++)
 		{
 			char c;
 			bool good;
 			do
 			{
-				Goto(j * 3 + 2 + (j / 3), i + 2 + (i / 3));
+				Goto(j * SUB_N + 2 + (j / SUB_N), i + 2 + (i / SUB_N));
 				_putch(' ');
-				Goto(j * 3 + 2 + (j / 3), i + 2 + (i / 3));
+				Goto(j * SUB_N + 2 + (j / SUB_N), i + 2 + (i / SUB_N));
 				good = false;
 				c = _getch();
 				for(unsigned int i = 0; i < valid_input.length(); i++)
@@ -292,7 +295,7 @@ bool Enter(char digits[9][9])
 	return 1;
 }
 
-bool Load(char digits[9][9], string arg_path)
+bool Load(char digits[N][N], string arg_path)
 {
 	string path;
 	if(arg_path == " ")
@@ -312,14 +315,14 @@ bool Load(char digits[9][9], string arg_path)
 		{
 			if(c == '\n')
 				continue;
-			digits[(int) counter / 9][counter % 9] = c;
+			digits[(int) counter / N][counter % N] = c;
 			counter++;
 		}
 		bool bad = false;
 		string valid_data = "1234567890";
-		for(int i = 0; i < 9; i++)
+		for(int i = 0; i < N; i++)
 		{
-			for(int j = 0; j < 9; j++)
+			for(int j = 0; j < N; j++)
 			{
 				bool found_valid = false;
 				for(unsigned int k = 0; k < valid_data.length(); k++)
@@ -347,7 +350,7 @@ bool Load(char digits[9][9], string arg_path)
 	return 1;
 }
 
-bool Save(char digits[9][9], string arg_path)
+bool Save(char digits[N][N], string arg_path)
 {
 	string path;
 	if(arg_path == " ")
@@ -378,11 +381,11 @@ bool Save(char digits[9][9], string arg_path)
 			"-------------------------------\n"
 		};
 		cout << "Saving...\n";
-		for(int i = 0; i < 9; i++)
+		for(int i = 0; i < N; i++)
 		{
-			for(int j = 0; j < 9; j++)
+			for(int j = 0; j < N; j++)
 			{
-				text[i + 1 + (i / 3)][j * 3 + 2 + (j / 3)] = digits[j][i];
+				text[i + 1 + (i / SUB_N)][j * SUB_N + 2 + (j / SUB_N)] = digits[j][i];
 			}
 		}
 		for(int i = 0; i < 13; i++)
@@ -399,36 +402,36 @@ bool Save(char digits[9][9], string arg_path)
 	return 1;
 }
 
-bool Solve(char digits[9][9])
+bool Solve(char digits[N][N])
 {
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < N; i++)
 	{
-		for(int j = 0; j < 9; j++)
+		for(int j = 0; j < N; j++)
 		{
 			if(digits[i][j] != '0')
 			{
-				for(int k = 0; k < 9; k++)
+				for(int k = 0; k < N; k++)
 				if((digits[i][k] == digits[i][j] && j != k) || 
 				   (digits[k][j] == digits[i][j] && i != k) || 
-				   digits[i - i % 3 + k / 3][j - j % 3 + k % 3] == digits[i][j] && !(i == i - i % 3 + k / 3 && j == j - j % 3 + k % 3))
+				   digits[i - i % SUB_N + k / SUB_N][j - j % SUB_N + k % SUB_N] == digits[i][j] && !(i == i - i % SUB_N + k / SUB_N && j == j - j % SUB_N + k % SUB_N))
 				{
 					return 0;
 				}
 			}
 		}
 	}
-	char temp[9][9];
-	for(int i = 0; i < 9; i++)
+	char temp[N][N];
+	for(int i = 0; i < N; i++)
 	{
-		for(int j = 0; j < 9; j++)
+		for(int j = 0; j < N; j++)
 		{
 			if(digits[i][j] != '0')
 				temp[i][j] = digits[i][j];
 		}
 	}
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < N; i++)
 	{
-		for(int j = 0; j < 9; j++)
+		for(int j = 0; j < N; j++)
 		{
 			if(digits[i][j] == '0')
 			{
@@ -441,9 +444,9 @@ bool Solve(char digits[9][9])
 						good = false;
 					else
 						guess++;
-					for(int k = 0; k < 9; k++)
+					for(int k = 0; k < N; k++)
 					{
-						if(temp[i][k] == guess || temp[k][j] == guess || temp[i - i % 3 + k / 3][j - j % 3 + k % 3] == guess)
+						if(temp[i][k] == guess || temp[k][j] == guess || temp[i - i % SUB_N + k / SUB_N][j - j % SUB_N + k % SUB_N] == guess)
 						{
 							good = false;
 							break;
@@ -471,9 +474,9 @@ bool Solve(char digits[9][9])
 			}
 		}
 	}
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < N; i++)
 	{
-		for(int j = 0; j < 9; j++)
+		for(int j = 0; j < N; j++)
 		{
 			digits[i][j] = temp[i][j];
 		}
